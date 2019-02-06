@@ -16,6 +16,7 @@ train = movielens['train']
 test = movielens['test']
 
 permutations = np.random.permutation(train.nnz)
+k = 10
 for i in range(1, 11):
     print('EPOCH: %s' % i)
     p = permutations[:int(train.nnz/10*i)]
@@ -27,14 +28,14 @@ for i in range(1, 11):
     item_labels = movielens['item_labels']
 
     model = LightFM(learning_rate=0.05, loss='bpr')
-    model.fit(train_set, epochs=10)
+    model.fit(train_set, epochs=20)
 
-    train_precision = precision_at_k(model, train, k=10).mean()
-    test_precision = precision_at_k(model, test, k=10).mean()
+    train_precision = precision_at_k(model, train, k=k).mean()
+    test_precision = precision_at_k(model, test, k=k).mean()
 
     train_auc = auc_score(model, train).mean()
     test_auc = auc_score(model, test).mean()
 
-    print('Precision: train %.2f, test %.2f.' % (train_precision, test_precision))
+    print('Precision@%d: train %.2f, test %.2f.' % (k, train_precision, test_precision))
     print('AUC: train %.2f, test %.2f.' % (train_auc, test_auc))
     print('--------------------------------------------', end='\n\n')
