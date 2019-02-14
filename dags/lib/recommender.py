@@ -2,10 +2,11 @@ import pickle
 
 from lightfm import LightFM
 from lightfm.evaluation import precision_at_k, auc_score
+from .utils import create_dir
 
 
 class Recommender:
-    def __init__(self, learning_rate=0.05, loss='warp'):
+    def __init__(self, learning_rate=0.05, loss='bpr'):
         self.model = LightFM(learning_rate=learning_rate, loss=loss)
 
     def fit(self, interactions, epochs):
@@ -18,5 +19,6 @@ class Recommender:
         return auc_score(self.model, test_interactions).mean()
 
     def dump_model(self, path):
+        create_dir(path)
         with open(path, mode='wb') as file:
             pickle.dump(self, file)

@@ -5,12 +5,12 @@ import logging
 
 from datetime import timedelta, datetime
 
-
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 
 from lib.recommender import Recommender
+from lib.utils import create_dir
 from scipy.sparse import coo_matrix
 
 FTP_CONN = 'teste_ftp'
@@ -25,12 +25,11 @@ default_args = {
     'retry_delay': timedelta(minutes=2)
 }
 
-
 # TODO: SEE RELATIVE PATHS
 time_step = 1
-input_path = '/home/ec2-user/airflow-recommender-pipeline/s3/input_data/data.pickle'
-output_path = '/home/ec2-user/airflow-recommender-pipeline/s3/output_data/output_train.pickle'
-model_path = '/home/ec2-user/airflow-recommender-pipeline/s3/model/recommender_model.pickle'
+input_path = '/usr/local/s3/input_data/data.pickle'
+output_path = '/usr/local/s3/output_data/output_train.pickle'
+model_path = '/usr/local/s3/model/recommender_model.pickle'
 dag = DAG('recommender_pipeline_dag', default_args=default_args, schedule_interval='@daily')
 
 
@@ -45,10 +44,13 @@ def extract_data(**context):
         train = movielens['train'][:time_step]
         shape = movielens['shape']
 
-        rows, cols, dta = np.concatenate([i[0] for i in train]), np.concatenate([i[1] for i in train]), np.concatenate([i[2] for i in train])
+        # TODO: OPTMIZE
+        rows, cols, dta = np.concatenate([i[0] for i in train]), np.concatenate([i[1] for i in train]), np.concatenate(
+            [i[2] for i in train])
         train_data = coo_matrix((dta, (rows, cols)), shape=shape)
         logging.info('NNZ: %d' % train_data.nnz)
 
+        create_dir(output_path)
         with open(output_path, mode='wb') as output_file:
             pickle.dump(train_data, output_file)
             path = output_file.name
@@ -56,6 +58,7 @@ def extract_data(**context):
     # send the path for the next task
     context['task_instance'].xcom_push(key='time_step', value=time_step)
     return path
+
 
 extract_task = PythonOperator(
     task_id='extract_task',
@@ -74,6 +77,7 @@ def train_model(**context):
     recommender = Recommender()
     recommender.fit(interactions=train_interactions, epochs=epochs)
     recommender.dump_model(model_path)
+
 
 train_task = PythonOperator(
     task_id='train_task',
