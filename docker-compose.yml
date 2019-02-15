@@ -17,8 +17,8 @@ services:
             - EXECUTOR=Local
         volumes:
             - ./dags:/usr/local/airflow/dags
-            - ./s3:/usr/local/s3
-            - D:\OneDrive\Projetos\airflow-recommender-pipeline\requirements.txt:/requirements.txt
+            - ./s3:/usr/local/airflow/s3
+            - ${PWD}/requirements.txt:/requirements.txt
         ports:
             - "8080:8080"
         command: webserver

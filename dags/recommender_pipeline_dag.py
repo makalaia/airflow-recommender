@@ -25,11 +25,10 @@ default_args = {
     'retry_delay': timedelta(minutes=2)
 }
 
-# TODO: SEE RELATIVE PATHS
 time_step = 1
-input_path = '/usr/local/s3/input_data/data.pickle'
-output_path = '/usr/local/s3/output_data/output_train.pickle'
-model_path = '/usr/local/s3/model/recommender_model.pickle'
+input_path = '/usr/local/airflow/s3/input_data/data.pickle'
+output_path = '/usr/local/airflow/s3/output_data/output_train.pickle'
+model_path = '/usr/local/airflow/s3/model/recommender_model.pickle'
 dag = DAG('recommender_pipeline_dag', default_args=default_args, schedule_interval='@daily')
 
 
