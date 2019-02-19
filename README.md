@@ -1,7 +1,7 @@
 # AIRFLOW RECOMMENDER PIPELINE
 
 This repository consists of a simplified recommender pipeline using the Apache Airflow framework.
-Although is not the focus of this work, the recommendation engine was based on the great LightFM library.
+Although is not the focus of this work, the recommendation engine was based on the great [LightFM library](https://github.com/lyst/lightfm).
 And the dataset used for the tests was the movielens dataset (the 100k ratings version) previously parsed into a sparse COO matrix format.
 
 The dataset is composed of roughly 90k ratings for the training set, and 10k ratings for the test set.
@@ -9,7 +9,7 @@ The training set was randomized and evenly distributed in 10 sparse matrices.
 
 To make the data transfer simpler, all the data transfer is file-based, and is stored on the s3 folder, to simulate 
 the AWS S3 service, which is basically a cloud file system. The same results could be obtained using the boto3 library
-in conjunction with the AWS S3 service, or any data source.
+in conjunction with AWS S3, or any data source.
 
 ## Tasks structure
 To simulate the passage of time, the start of the DAG was set by default to 10 days ago of the running date of the DAG. 
@@ -35,7 +35,7 @@ For this, just run the script **run_airflow_container.sh**, which, in addition o
 will also set the write permissions needed on the volumes.
 
 Then after, the airflow webserver will start on [localhost:8080](http://localhost:8080/), you just need to turn the DAG on, 
-and wait for all of the runs to be executed.
+wait for all of the runs to be executed and check the *performance.csv* file.
 
 ### Windows
 If you are on windows, remember to set the PWD environment variable to the current directory before running 

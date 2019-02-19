@@ -1,9 +1,8 @@
 import pickle
 import numpy as np
-import pytz
 import logging
 
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -19,7 +18,7 @@ MYSQL_CONN = 'place'
 
 default_args = {
     'owner': 'lucas.silva',
-    'depends_on_past': True,  # para esperar que os dias anteriores terminem
+    'depends_on_past': True,
     'start_date': days_ago(10),
     'retries': 5,
     'retry_delay': timedelta(minutes=2)
@@ -43,8 +42,7 @@ def extract_data(**context):
         shape = movielens['shape']
 
         # TODO: OPTMIZE
-        rows, cols, dta = np.concatenate([i[0] for i in train]), np.concatenate([i[1] for i in train]), np.concatenate(
-            [i[2] for i in train])
+        rows, cols, dta = np.concatenate([i[0] for i in train]), np.concatenate([i[1] for i in train]), np.concatenate([i[2] for i in train])
         train_data = coo_matrix((dta, (rows, cols)), shape=shape)
         logging.info('NNZ: %d' % train_data.nnz)
 
