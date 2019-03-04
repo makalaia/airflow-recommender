@@ -33,16 +33,16 @@ dag = DAG('recommender_pipeline_dag', default_args=default_args, schedule_interv
 # Extract task
 def extract_data(**context):
     logging.info('EXECUTION_DATE: %s' % context['task_instance'].execution_date)
-    time_step = (context['task_instance'].execution_date - default_args['start_date']).days + 1
+    time_step = (context['task_instance'].execution_date - default_args['start_date']).days
     logging.info('TIME_STEP: %d' % time_step)
 
     with open(input_file_path, mode='rb') as input_file:
         movielens = pickle.load(input_file)
-        train = movielens['train'][:time_step]
+        train = movielens['train'][time_step]
         shape = movielens['shape']
 
         # TODO: OPTMIZE
-        rows, cols, dta = np.concatenate([i[0] for i in train]), np.concatenate([i[1] for i in train]), np.concatenate([i[2] for i in train])
+        rows, cols, dta = train[0], train[1], train[2]
         train_data = coo_matrix((dta, (rows, cols)), shape=shape)
         logging.info('NNZ: %d' % train_data.nnz)
 
@@ -70,8 +70,15 @@ def train_model(**context):
     path = context['task_instance'].xcom_pull(key='path', task_ids='extract_task')
     with open(path, mode='rb') as file:
         train_interactions = pickle.load(file)
-    recommender = Recommender()
-    recommender.fit(interactions=train_interactions, epochs=epochs)
+
+    try:
+        with open(model_file_path, mode='rb') as file:
+            recommender = pickle.load(file)
+        logging.info('CONSEGUIU LER DO ARQUIVO')
+    except FileNotFoundError:
+        logging.info('NAO CONSEGUIU LER DO ARQUIVO')
+        recommender = Recommender()
+    recommender.fit_partial(interactions=train_interactions, epochs=epochs)
     recommender.dump_model(model_file_path)
 
 

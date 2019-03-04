@@ -10,6 +10,9 @@ class Recommender:
         self.model = LightFM(learning_rate=learning_rate, loss=loss)
 
     def fit(self, interactions, epochs):
+        self.model.fit(interactions=interactions, epochs=epochs)
+
+    def fit_partial(self, interactions, epochs):
         self.model.fit_partial(interactions=interactions, epochs=epochs)
 
     def evaluate_at_k(self, test_interactions, k):
