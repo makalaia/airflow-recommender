@@ -66,19 +66,20 @@ extract_task = PythonOperator(
 
 # Train task
 def train_model(**context):
-    epochs = 10
+    epochs = 50
     path = context['task_instance'].xcom_pull(key='path', task_ids='extract_task')
     with open(path, mode='rb') as file:
         train_interactions = pickle.load(file)
+    with open(input_file_path, mode='rb') as input_file:
+        test_interactions = pickle.load(input_file)['test']
 
     try:
         with open(model_file_path, mode='rb') as file:
             recommender = pickle.load(file)
-        logging.info('CONSEGUIU LER DO ARQUIVO')
     except FileNotFoundError:
-        logging.info('NAO CONSEGUIU LER DO ARQUIVO')
         recommender = Recommender()
-    recommender.fit_partial(interactions=train_interactions, epochs=epochs)
+    max_epoch, max_auc = recommender.fit_until_decay(interactions=train_interactions, val_interactions=test_interactions, max_epochs=epochs, patience=1)
+    logging.info('MAX EPOCH: {} \t MAX AUC: {}'.format(max_epoch, max_auc))
     recommender.dump_model(model_file_path)
 
 

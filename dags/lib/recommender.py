@@ -15,6 +15,21 @@ class Recommender:
     def fit_partial(self, interactions, epochs):
         self.model.fit_partial(interactions=interactions, epochs=epochs)
 
+    def fit_until_decay(self, interactions, val_interactions, max_epochs, patience=1):
+        max_auc = 0
+        assert max_epochs > 0
+
+        for i in range(max_epochs):
+            self.model.fit_partial(interactions=interactions, epochs=1)
+            auc = self.evaluate_auc(val_interactions)
+            if auc > max_auc:
+                max_auc = auc
+            elif patience == 0:
+                break
+            else:
+                patience -= 1
+        return i, max_auc
+
     def evaluate_at_k(self, test_interactions, k):
         return precision_at_k(self.model, test_interactions, k=k).mean()
 
